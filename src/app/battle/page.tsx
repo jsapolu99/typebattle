@@ -21,7 +21,11 @@ export default function Battle() {
                 placeholder={'Type the above text here'}
               />
             </td>
-
+          </tr>
+          <tr className={'my-9 flex justify-center min-w-full p-0'}>
+            <td className={'w-10 h-10 rounded-full bg-blue-500 mx-1'} />
+            <td className={'w-10 h-10 rounded-full bg-blue-500 mx-1'} />
+            <td className={'w-10 h-10 rounded-full bg-blue-500 mx-1'} />
           </tr>
           </tbody>
         </table>

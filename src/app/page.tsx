@@ -11,7 +11,7 @@ export default function Home() {
           href={'/battle'}
           className='flex my-3 p-3 text-white md:w-40 bg-green-500 rounded-lg text-center hover:bg-green-400'
         >
-          Enter a Typing Race</Link>
+          Start New Battle</Link>
       </div>
     </main>
   );

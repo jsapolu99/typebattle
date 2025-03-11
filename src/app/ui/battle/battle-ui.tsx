@@ -15,12 +15,16 @@ export default function BattleUI ({text, time}: {text: string, time: number}) {
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setUserInput(e.target.value);
-
+    updateWpm();
+    updateTotalKeys();
     const currentIndex = e.target.value.length;
     const lastChar =e.target.value[currentIndex - 1];
 
     if (text[currentIndex - 1] !== lastChar) {
       updateHealth();
+    }
+    else if (text[currentIndex - 1] === lastChar) {
+      updateCorrectKeys();
     }
   }
 
@@ -31,6 +35,31 @@ export default function BattleUI ({text, time}: {text: string, time: number}) {
      seconds > 0 && setInterval(() => setSeconds(seconds - 1), 1000);
    return () => clearInterval(timer);
   }, [seconds]);
+
+  // Calculate Accuracy
+  const [correctKeys, setCorrectKeys] = useState(0);
+  const updateCorrectKeys = () => {
+
+    const correct = correctKeys + 1;
+    setCorrectKeys(correct);
+  }
+
+  const [totalKeys, setTotalKeys] = useState(0);
+
+  const updateTotalKeys = () => {
+    const total = totalKeys + 1;
+    setTotalKeys(total);
+  }
+
+  // Calculate WPM
+  const [wpm, setWpm] = useState(0);
+
+  const updateWpm = () => {
+    const words = userInput.split(' ').length;
+    const timed = words * 60;
+    const wpm = timed / (time - seconds);
+    setWpm(wpm);
+  }
 
   // Battle UI
   if (health.current > 0 && userInput.length < text.length && seconds > 0) {
@@ -96,7 +125,8 @@ export default function BattleUI ({text, time}: {text: string, time: number}) {
   // Round Win
   else if(userInput.length === text.length) {
     return (
-      <p className={'text-black'}>You Win!</p>
+      <p className={'text-black'}>You Win! Accuracy: {parseFloat((correctKeys / totalKeys * 100).toPrecision(4))}% WPM: {wpm} </p>
+
     );
   }
   // Round Loss

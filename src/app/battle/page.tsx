@@ -5,7 +5,7 @@ import BattleUI from "@/app/ui/battle/battle-ui";
 export default function Battle() {
 
   const sampleText = 'Filler text for now';
-  const time = 10;
+  const time = 100;
   return (
     <main className={'bg-[#eeeeee] min-h-screen'}>
       <Navbar/>

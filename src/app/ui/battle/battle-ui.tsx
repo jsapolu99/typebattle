@@ -4,29 +4,36 @@ import {RefObject, useRef, useState, useEffect} from "react";
 import clsx from "clsx";
 
 export default function BattleUI ({text, time}: {text: string, time: number}) {
+  // Health controls
   const health = useRef(3);
+  const updateHealth = () => {
+    health.current = health.current - 1;
+  }
 
+  // User input controls
   const [userInput, setUserInput] = useState('');
-  const [seconds, setSeconds] = useState(time);
-  const [status, setStatus] = useState(false);
 
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setUserInput(e.target.value);
+
+    const currentIndex = e.target.value.length;
+    const lastChar =e.target.value[currentIndex - 1];
+
+    if (text[currentIndex - 1] !== lastChar) {
+      updateHealth();
+    }
+  }
+
+  // Timer controls
+  const [seconds, setSeconds] = useState(time);
   useEffect (() => {
    const timer =
      seconds > 0 && setInterval(() => setSeconds(seconds - 1), 1000);
    return () => clearInterval(timer);
   }, [seconds]);
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setUserInput(e.target.value);
-  }
-  // Decreases health by 1
-  const updateHealth = () => {
-    health.current = health.current - 1;
-  }
-
-  const currentIndex = userInput.length;
-
-  if (health.current > 0 && currentIndex < text.length && seconds > 0) {
+  // Battle UI
+  if (health.current > 0 && userInput.length < text.length && seconds > 0) {
     return (
       <table className={'flex mx-0 my-16 bg-[#f6fbff] w-1/2 h-auto tex-gray-900 justify-center rounded-lg'}>
         <tbody className={'min-w-full p-3'}>
@@ -41,17 +48,10 @@ export default function BattleUI ({text, time}: {text: string, time: number}) {
               {text.split("").map((char, index) => {
                 let className = "text-gray-400";
 
-                if (index < currentIndex) {
+                if (index < userInput.length) {
                   className = userInput[index] === char ? "text-green-400" : "bg-red-300";
-                  if (className === 'bg-red-300') {
-                    updateHealth();
-                    console.log(health);
-                    if (health.current <= 0) {
-                      console.log('Game Over');
-                    }
-                  }
                 }
-                if (index === currentIndex) {
+                if (index === userInput.length) {
                   className += " bg-blue-500 animate-pulse"; // Cursor effect
                 }
                 return (
@@ -93,11 +93,13 @@ export default function BattleUI ({text, time}: {text: string, time: number}) {
       </table>
     );
   }
-  else if(currentIndex === text.length) {
+  // Round Win
+  else if(userInput.length === text.length) {
     return (
       <p className={'text-black'}>You Win!</p>
     );
   }
+  // Round Loss
   else if (health.current <= 0 || seconds === 0) {
     return (
       <p className={'text-black'}>Round Over</p>

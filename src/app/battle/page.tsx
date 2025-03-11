@@ -10,7 +10,7 @@ export default function Battle() {
     <main className={'bg-[#eeeeee] min-h-screen'}>
       <Navbar/>
       <div className={'flex justify-center'}>
-        <BattleUI text={sampleText} time={time} />
+        <BattleUI text={sampleText} time={time}/>
       </div>
     </main>
   );

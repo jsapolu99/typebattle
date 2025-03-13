@@ -125,14 +125,71 @@ export default function BattleUI ({text, time}: {text: string, time: number}) {
   // Round Win
   else if(userInput.length === text.length) {
     return (
-      <p className={'text-black'}>You Win! Accuracy: {parseFloat((correctKeys / totalKeys * 100).toPrecision(4))}% WPM: {wpm} </p>
+      <table className={'flex mx-0 my-16 bg-[#f6fbff] w-1/2 h-auto tex-gray-900 justify-center rounded-lg'}>
+        <tbody className={'min-w-full p-3'}>
+          <tr className={'my-9 flex justify-center rounded'}>
+            <td>
+              <p className={'text-green-700 text-xl font-bold'}>Round Won</p>
+            </td>
+          </tr>
+          <tr className={'my-9 flex justify-center rounded'}>
+            <td>
+              <p className={'text-gray-900'}>Accuracy: {parseFloat((correctKeys / totalKeys * 100).toPrecision(4))}%</p>
+            </td>
+          </tr>
+        <tr className={'my-9 flex justify-center rounded'}>
+          <td>
+            <p className={'text-gray-900'}>WPM: {wpm}</p>
+          </td>
+        </tr>
+        <tr className={'my-9 flex justify-center rounded'}>
+          <td>
+            <button className={'text-gray-50 bg-blue-300 rounded p-2'}>Shop</button>
+          </td>
+        </tr>
+          <tr className={'my-9 flex justify-center rounded'}>
+            <td>
+              <button className={'bg-blue-300 text-gray-50 rounded p-2'}>Ready Up</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
 
     );
   }
   // Round Loss
   else if (health.current <= 0 || seconds === 0) {
     return (
-      <p className={'text-black'}>Round Over</p>
+    <table className={'flex mx-0 my-16 bg-[#f6fbff] w-1/2 h-auto tex-gray-900 justify-center rounded-lg'}>
+      <tbody className={'min-w-full p-3'}>
+      <tr className={'my-9 flex justify-center rounded'}>
+        <td>
+          <p className={'text-red-700 text-xl font-bold'}>Round Lost</p>
+        </td>
+      </tr>
+      <tr className={'my-9 flex justify-center rounded'}>
+        <td>
+          <p className={'text-gray-900'}>Accuracy: {parseFloat((correctKeys / totalKeys * 100).toPrecision(4))}%</p>
+        </td>
+      </tr>
+      <tr className={'my-9 flex justify-center rounded'}>
+        <td>
+          <p className={'text-gray-900'}>WPM: {wpm}</p>
+        </td>
+      </tr>
+      <tr className={'my-9 flex justify-center rounded'}>
+        <td>
+          <button className={'text-gray-50 bg-blue-300 rounded p-2'}>Shop</button>
+        </td>
+      </tr>
+      <tr className={'my-9 flex justify-center rounded'}>
+        <td>
+          <button className={'bg-blue-300 text-gray-50 rounded p-2'}>Ready Up</button>
+        </td>
+      </tr>
+      </tbody>
+    </table>
     );
   }
 }

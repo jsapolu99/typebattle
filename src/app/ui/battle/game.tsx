@@ -3,6 +3,9 @@ import React, { useEffect } from "react";
 import type { GameProps, Player, GameStatus, PlayerScore } from "../../../../server/types/types";
 import { useState } from "react";
 import {Socket, io} from "socket.io-client";
+import LeaderboardCard from "@/components/ui/leaderboard-card";
+import { Textarea } from "@/components/ui/textarea";
+import { Button } from "@/components/ui/button";
 
 export default function Game({ gameId, name }: GameProps) {
   const [ioInstance, setIoInstance] = useState<Socket>();
@@ -13,7 +16,8 @@ export default function Game({ gameId, name }: GameProps) {
   const [inputParagraph, setInputParagraph] = useState<string>('');
 
   useEffect(() => {
-    const socket = io(process.env.NEXT_PUBLIC_WEBSOCKET_URL as string, {
+    /* ********************* CHANGE THE HARD CODED URL LATER ********************************* */
+    const socket = io('http://localhost:8080', {
       transports: ["websocket"],
     })
 
@@ -114,7 +118,53 @@ export default function Game({ gameId, name }: GameProps) {
 
   return (
     <div className={'w-screen p-10 grid grid-cols-1 lg:grid-cols-3 gap-10'}>
+      <div className={'w-full order-last lg:order-first'}>
+        <h2 className={'text-2xl font-medium mb-10 mt-10 lg:mt-0'}>Leaderboard</h2>
+        <div className={'flex flex-col gap-5 w-full'}>
+          {/* Sort players based on score and map */}
+          {players
+            .sort((a, b) => b.score - a.score)
+            .map((player, index) => (
+              <LeaderboardCard
+                key={player.id}
+                player={player}
+                rank={index + 1}
+              />
+            ))}
+        </div>
+      </div>
 
+      {/*Game */}
+      <div className={'lg:col-span-2 h-full'}>
+        {gameStatus === 'not-started' && (
+          <div className={'flex flex-col items-center justify-center p-10'}>
+            <h1 className={'text-2xl font-bold'}>Waiting for players to join...</h1>
+
+            {host === ioInstance?.id && (
+              <Button className={'mt-10 px-20'}onClick={startGame}>
+                Start Game
+                </Button>
+            )}
+          </div>
+        )}
+
+        {gameStatus === 'in-progress' && (
+          <div className={'h-full'}>
+            <h1 className={'text-2xl font-bold mb-10'}>Type the paragraph below</h1>
+            <div className={'relative h-full'}>
+              <p className={'text-2xl lg:text-5xl p-5'}>{paragraph}</p>
+
+              <Textarea
+                value={inputParagraph}
+                onChange={(e) => setInputParagraph(e.target.value)}
+                className={'text-2xl lg:text-5xl outline-none p-5 absolute top-0 left-0 right-0 bottom-0 z-10 opacity-75'}
+                placeholder=''
+                disabled={gameStatus !== 'in-progress' || !ioInstance}
+              />
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 }

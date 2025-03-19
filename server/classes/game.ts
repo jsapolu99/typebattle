@@ -5,7 +5,7 @@ import { rooms } from "../setupListeners";
 export class Game {
   gameStatus: 'not-started' |'in-progress' |'finished';
   gameId: string;
-  players: { id: string; name: string; health: number; wpm: number; accuracy: number; coins: number }[];
+  players: { id: string; name: string; score: number; }[];
   io: Server;
   gameHost: string;
   paragraph: string;
@@ -26,10 +26,7 @@ export class Game {
       if (this.gameHost !== socket.id) return socket.emit('error', 'Only the host can start the game');
 
       for (const player of this.players) {
-        player.wpm = 0;
-        player.accuracy = 0;
-        player.coins = 0;
-        player.health = 3;
+       player.score = 0;
       }
       this.io.to(this.gameId).emit('players', this.players);
 
@@ -53,13 +50,11 @@ export class Game {
 
       const splitParagraphWords = this.paragraph.split(' ');
       const splitTypedWords = typed.split(' ');
-      const splitParagraphChars = this.paragraph.split('');
-      const splitTypedChars = typed.split('');
 
-      let wpm, accuracy = 0;
-      for (let i = 0; i < splitTypedChars.length; i++) {
-        if (splitTypedChars[i] === splitParagraphChars[i]) {
-          accuracy++;
+      let score = 0;
+      for (let i = 0; i < splitTypedWords.length; i++) {
+        if (splitTypedWords[i] === splitParagraphWords[i]) {
+          score++;
           // **************************** NEED TO CONTINUE WORK HERE WILL LIKELY HAVE TO CHANGE HOW THE GAME IS PLAYED ******************************
         } else {
           break;
@@ -67,9 +62,9 @@ export class Game {
       }
       const player = this.players.find(player => player.id === socket.id);
 
-      if (player) player.accuracy = accuracy;
+      if (player) player.score = score;
 
-      this.io.to(this.gameId).emit('player-score', {id: socket.id, wpm, accuracy});
+      this.io.to(this.gameId).emit('player-score', {id: socket.id, score});
     });
 
     socket.on('leave', () => {
@@ -110,9 +105,9 @@ export class Game {
   joinPlayer(id: string, name: string, socket: Socket) {
     if (this.gameStatus === 'in-progress') return socket.emit('error', 'Game already in progress');
 
-    this.players.push({id, name, health: 3, wpm: 0, accuracy: 0, coins: 0});
+    this.players.push({id, name, score: 0});
     this.io.to(this.gameId).emit('player-joined', {
-      id, name, health: 3, wpm: 0, accuracy: 0, coins: 0
+      id, name, score: 0
     });
 
     socket.emit('player', this.players);

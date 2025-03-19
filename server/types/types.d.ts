@@ -1,9 +1,7 @@
 export type Player = {
   id: string;
   name: string;
-  health: number;
-  wpm: number;
-  accuracy: number;
+  score: number;
 };
 
 export type PlayerScore = {

@@ -36,6 +36,12 @@ export default function Game({ gameId, name }: GameProps) {
     return () => removeListeners();
   }, [ioInstance]);
 
+  useEffect(() => {
+    if (!ioInstance || gameStatus !== 'in-progress') return;
+
+    ioInstance.emit('player-typed', inputParagraph);
+  }, [inputParagraph]);
+
   function setupListeners() {
     if(!ioInstance) return;
 
@@ -164,6 +170,21 @@ export default function Game({ gameId, name }: GameProps) {
             </div>
           </div>
         )}
+
+        {gameStatus === 'finished' && (
+          <div>
+            <h1>
+              Game Finished!
+              {ioInstance?.id === host && ' Restart the game fresh!'}
+            </h1>
+
+            {host === ioInstance?.id && (
+              <Button className={'mt-10 px-20'} onClick={startGame}>
+                Start Game
+              </Button>
+            )}
+          </div>
+          )}
       </div>
     </div>
   );

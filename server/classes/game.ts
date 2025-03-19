@@ -1,10 +1,11 @@
 import {Server, Socket} from "socket.io";
 import {generateParagraph} from "../utils/generateParagraph";
+import { rooms } from "../setupListeners";
 
 export class Game {
   gameStatus: 'not-started' |'in-progress' |'finished';
   gameId: string;
-  players: { id: string; health: number; wpm: number; accuracy: number; coins: number }[];
+  players: { id: string; name: string; health: number; wpm: number; accuracy: number; coins: number }[];
   io: Server;
   gameHost: string;
   paragraph: string;
@@ -50,16 +51,59 @@ export class Game {
     socket.on('player-typed', (typed: string) => {
       if (this.gameStatus !== 'in-progress') return socket.emit('error', 'The game has not yet started');
 
-      const splitParagraph = this.paragraph.split(' ');
-      const splitTyped = typed.split(' ');
+      const splitParagraphWords = this.paragraph.split(' ');
+      const splitTypedWords = typed.split(' ');
+      const splitParagraphChars = this.paragraph.split('');
+      const splitTypedChars = typed.split('');
 
       let wpm, accuracy = 0;
-      for (let i = 0; i < splitTyped.length; i++) {
-        if (splitTyped[i] === splitParagraph[i]) {
+      for (let i = 0; i < splitTypedChars.length; i++) {
+        if (splitTypedChars[i] === splitParagraphChars[i]) {
           accuracy++;
           // **************************** NEED TO CONTINUE WORK HERE WILL LIKELY HAVE TO CHANGE HOW THE GAME IS PLAYED ******************************
+        } else {
+          break;
         }
       }
+      const player = this.players.find(player => player.id === socket.id);
+
+      if (player) player.accuracy = accuracy;
+
+      this.io.to(this.gameId).emit('player-score', {id: socket.id, wpm, accuracy});
+    });
+
+    socket.on('leave', () => {
+      if (this.gameHost === socket.id) {
+        this.players = this.players.filter((player) => player.id !== socket.id);
+
+        if (this.players.length !== 0) {
+          this.gameHost = this.players[0].id;
+          this.io.to(this.gameId).emit('new-host', this.gameHost);
+          this.io.to(this.gameId).emit('player-left', socket.id);
+        } else {
+          rooms.delete(this.gameId);
+        }
+      }
+      socket.leave(this.gameId);
+      this.players = this.players.filter((player) => player.id !== socket.id);
+      this.io.to(this.gameId).emit('player-left', socket.id);
+    });
+
+    socket.on('disconnect', () => {
+      if (this.gameHost === socket.id) {
+        this.players = this.players.filter((player) => player.id !== socket.id);
+
+        if (this.players.length !== 0) {
+          this.gameHost = this.players[0].id;
+          this.io.to(this.gameId).emit('new-host', this.gameHost);
+          this.io.to(this.gameId).emit('player-left', socket.id);
+        } else {
+          rooms.delete(this.gameId);
+        }
+      }
+      socket.leave(this.gameId);
+      this.players = this.players.filter((player) => player.id !== socket.id);
+      this.io.to(this.gameId).emit('player-left', socket.id);
     });
   }
 

@@ -34,6 +34,7 @@ export class Game {
 
       const paragraph = await generateParagraph();
 
+      // ******* NEED TO ADD ABILITY TO CHANGE TEXT LENGTH ********
       this.paragraph = paragraph;
 
       this.io.to(this.gameId).emit('game-started', paragraph);
@@ -42,6 +43,7 @@ export class Game {
         this.gameStatus = 'finished';
         this.io.to(this.gameId).emit('game-finished');
         this.io.to(this.gameId).emit('players', this.players);
+        // ********* NEED TO ADD ABILITY TO CHANGE TIMER *********
       }, 60000);
     });
 

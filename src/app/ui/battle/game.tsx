@@ -6,6 +6,14 @@ import {Socket, io} from "socket.io-client";
 import LeaderboardCard from "@/components/ui/leaderboard-card";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
+import Navbar from "@/app/ui/navbar";
+import {Card, CardHeader, CardContent} from "@/components/ui/card";
+import {RadioGroup, RadioGroupItem} from "@/components/ui/radio-group";
+import {Label} from "@/components/ui/label";
+import {ToggleGroup, ToggleGroupItem} from "@/components/ui/toggle-group";
+import {Slider} from "@/components/ui/slider";
+import { cn } from "@/lib/utils"
+
 
 export default function Game({ gameId, name }: GameProps) {
   const [ioInstance, setIoInstance] = useState<Socket>();
@@ -14,6 +22,9 @@ export default function Game({ gameId, name }: GameProps) {
   const [paragraph, setParagraph] = useState<string>('');
   const [host, setHost] = useState<string>('');
   const [inputParagraph, setInputParagraph] = useState<string>('');
+  const [health, setHealth] = useState<number>(5);
+  const [time, setTime] = useState<number>(60);
+  const [textLength, setTextLength] = useState<number>(100);
 
   useEffect(() => {
     /* ********************* CHANGE THE HARD CODED URL LATER ********************************* */
@@ -122,8 +133,20 @@ export default function Game({ gameId, name }: GameProps) {
     }
   };
 
+  async function copyInvite() {
+    try {
+      await navigator.clipboard.writeText(gameId)
+    } catch (e) {
+      console.error('Failed to copy invite code', e);
+    }
+
+  }
+
   return (
+    <div>
+      <Navbar />
     <div className={'w-screen p-10 grid grid-cols-1 lg:grid-cols-3 gap-10'}>
+      {/* Leaderboard */}
       <div className={'w-full order-last lg:order-first'}>
         <h2 className={'text-2xl font-medium mb-10 mt-10 lg:mt-0'}>Leaderboard</h2>
         <div className={'flex flex-col gap-5 w-full'}>
@@ -147,9 +170,66 @@ export default function Game({ gameId, name }: GameProps) {
             <h1 className={'text-2xl font-bold'}>Waiting for players to join...</h1>
 
             {host === ioInstance?.id && (
-              <Button className={'mt-10 px-20'}onClick={startGame}>
-                Start Game
+              <div>
+                <Button className={'mt-10 px-20'} onClick={startGame}>
+                  Start Game
                 </Button>
+                <Card className={'my-3'}>
+                  <CardHeader>Match Settings:</CardHeader>
+                  <CardContent>
+                    <p>Invite Code: {gameId}</p>
+                    <Button className={'mt-1'} onClick={copyInvite}>Copy</Button>
+                    <div className={'my-8'}>
+                    <form>
+                      <div className={'grid-cols-4'}>
+                        <h2>Health:</h2>
+                          <ToggleGroup
+                            variant={'outline'}
+                            type={'single'}
+                            defaultValue={3}
+                            onValueChange={(value) => setHealth(value)}
+                          >
+                            <ToggleGroupItem value={-1}>Off</ToggleGroupItem>
+                            <ToggleGroupItem value={1}>1</ToggleGroupItem>
+                            <ToggleGroupItem value={2}>2</ToggleGroupItem>
+                            <ToggleGroupItem value={3}>3</ToggleGroupItem>
+                            <ToggleGroupItem value={4}>4</ToggleGroupItem>
+                            <ToggleGroupItem value={5}>5</ToggleGroupItem>
+                          </ToggleGroup>
+                        <h2>Time:</h2>
+                        <ToggleGroup
+                          type={'single'}
+                          variant={'outline'}
+                          defaultValue={60}
+                          onValueChange={(value) => setTime(value)}
+                        >
+                          <ToggleGroupItem value={-1}>Off</ToggleGroupItem>
+                          <ToggleGroupItem value={30}>30s</ToggleGroupItem>
+                          <ToggleGroupItem value={60}>60s</ToggleGroupItem>
+                          <ToggleGroupItem value={90}>90s</ToggleGroupItem>
+                          <ToggleGroupItem value={120}>120s</ToggleGroupItem>
+                        </ToggleGroup>
+                        <div className={'py-2'}>
+                          <h2>Text Length:</h2>
+                          <div className={'py-2'}>
+                            <Label>{textLength} words</Label>
+                            <Slider
+                              className={'my-2'}
+                              defaultValue={[100]}
+                              max={200}
+                              min={50}
+                              step={1}
+                              onValueChange={(value) => setTextLength(value[0])}
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    </form>
+                    </div>
+                  </CardContent>
+
+                </Card>
+              </div>
             )}
           </div>
         )}
@@ -186,6 +266,7 @@ export default function Game({ gameId, name }: GameProps) {
           </div>
           )}
       </div>
+    </div>
     </div>
   );
 }

@@ -9,7 +9,7 @@ export function generateParagraphUsingLoremIpsum() {
   return paragraph.join(' ').toLowerCase();
 }
 
-export async function generateParagraph() {
+export async function generateParagraph(textLength: number) {
   try {
     const response = await fetch('http://metaphorpsum.com/paragraphs/10');
 
@@ -20,7 +20,7 @@ export async function generateParagraph() {
     const data = await response.text();
     const paragraph = data.split('\n').join(' ');
 
-    return paragraph;
+    return paragraph.split(' ').slice(0, textLength + 1).join(' ');
   } catch (e) {
     console.log(e);
     const paragraph = generateParagraphUsingLoremIpsum();

@@ -9,6 +9,8 @@ export class Game {
   io: Server;
   gameHost: string;
   paragraph: string;
+  time: number;
+  textLength: number;
 
   constructor(id: string, io: Server, host: string) {
     this.gameId = id;
@@ -17,10 +19,12 @@ export class Game {
     this.gameHost = host;
     this.gameStatus = 'not-started';
     this.paragraph = '';
+    this.time = 60000;
+    this.textLength = 0;
   }
 
   setupListeners(socket: Socket) {
-    socket.on('start-game', async () => {
+    socket.on('start-game', async (time: number, textLength: number) => {
       if (this.gameStatus === 'in-progress') return socket.emit('error', 'Game already in progress');
 
       if (this.gameHost !== socket.id) return socket.emit('error', 'Only the host can start the game');
@@ -28,23 +32,26 @@ export class Game {
       for (const player of this.players) {
        player.score = 0;
       }
+      this.time = time;
+      this.textLength = textLength;
+
       this.io.to(this.gameId).emit('players', this.players);
 
       this.gameStatus = 'in-progress';
 
-      const paragraph = await generateParagraph();
+      const paragraph = await generateParagraph(textLength);
 
       // ******* NEED TO ADD ABILITY TO CHANGE TEXT LENGTH ********
       this.paragraph = paragraph;
 
-      this.io.to(this.gameId).emit('game-started', paragraph);
+      this.io.to(this.gameId).emit('game-started', paragraph, this.time);
 
       setTimeout(() => {
         this.gameStatus = 'finished';
         this.io.to(this.gameId).emit('game-finished');
         this.io.to(this.gameId).emit('players', this.players);
         // ********* NEED TO ADD ABILITY TO CHANGE TIMER *********
-      }, 60000);
+      }, this.time);
     });
 
     socket.on('player-typed', (typed: string) => {

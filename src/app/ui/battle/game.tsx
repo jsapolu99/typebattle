@@ -7,7 +7,7 @@ import LeaderboardCard from "@/components/ui/leaderboard-card";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import Navbar from "@/app/ui/navbar";
-import {Card, CardHeader, CardContent} from "@/components/ui/card";
+import {Card, CardHeader, CardContent, CardFooter} from "@/components/ui/card";
 import {RadioGroup, RadioGroupItem} from "@/components/ui/radio-group";
 import {Label} from "@/components/ui/label";
 import {ToggleGroup, ToggleGroupItem} from "@/components/ui/toggle-group";
@@ -23,8 +23,9 @@ export default function Game({ gameId, name }: GameProps) {
   const [host, setHost] = useState<string>('');
   const [inputParagraph, setInputParagraph] = useState<string>('');
   const [health, setHealth] = useState<number>(5);
-  const [time, setTime] = useState<number>(60);
+  const [time, setTime] = useState<number>(60000);
   const [textLength, setTextLength] = useState<number>(100);
+  const [seconds, setSeconds] = useState(time / 1000);
 
   useEffect(() => {
     /* ********************* CHANGE THE HARD CODED URL LATER ********************************* */
@@ -87,8 +88,10 @@ export default function Game({ gameId, name }: GameProps) {
       );
     });
 
-    ioInstance.on('game-started', (paragraph: string) => {
+    ioInstance.on('game-started', (paragraph: string, time: number) => {
       setParagraph(paragraph);
+      setTime(time);
+      setSeconds(time / 1000);
       setGameStatus('in-progress');
     });
 
@@ -105,6 +108,15 @@ export default function Game({ gameId, name }: GameProps) {
       console.log(message);
     })
   }
+
+
+  useEffect (() => {
+    if (gameStatus !== 'in-progress') setSeconds(time / 1000);
+    const timer =
+      seconds > 0 && setInterval(() => setSeconds(seconds - 1), 1000);
+    return () => clearInterval(timer);
+  }, [seconds]);
+
 
 
   function removeListeners() {
@@ -124,7 +136,7 @@ export default function Game({ gameId, name }: GameProps) {
   function startGame() {
     if (!ioInstance) return;
 
-    ioInstance.emit('start-game');
+    ioInstance.emit('start-game', time, textLength);
   }
 
   window.onbeforeunload = () => {
@@ -200,14 +212,13 @@ export default function Game({ gameId, name }: GameProps) {
                         <ToggleGroup
                           type={'single'}
                           variant={'outline'}
-                          defaultValue={60}
+                          defaultValue={60000}
                           onValueChange={(value) => setTime(value)}
                         >
-                          <ToggleGroupItem value={-1}>Off</ToggleGroupItem>
-                          <ToggleGroupItem value={30}>30s</ToggleGroupItem>
-                          <ToggleGroupItem value={60}>60s</ToggleGroupItem>
-                          <ToggleGroupItem value={90}>90s</ToggleGroupItem>
-                          <ToggleGroupItem value={120}>120s</ToggleGroupItem>
+                          <ToggleGroupItem value={30000}>30s</ToggleGroupItem>
+                          <ToggleGroupItem value={60000}>60s</ToggleGroupItem>
+                          <ToggleGroupItem value={90000}>90s</ToggleGroupItem>
+                          <ToggleGroupItem value={120000}>120s</ToggleGroupItem>
                         </ToggleGroup>
                         <div className={'py-2'}>
                           <h2>Text Length:</h2>
@@ -237,16 +248,43 @@ export default function Game({ gameId, name }: GameProps) {
         {gameStatus === 'in-progress' && (
           <div className={'h-full'}>
             <h1 className={'text-2xl font-bold mb-10'}>Type the paragraph below</h1>
+            <Label>{seconds}</Label>
             <div className={'relative h-full'}>
-              <p className={'text-2xl lg:text-5xl p-5'}>{paragraph}</p>
+              <Card>
+                <CardContent>
+                  <div className={'text-2xl tracking-widest'}>
+                    {paragraph.split("").map((char, index) => {
+                      let className = "text-gray-400";
 
-              <Textarea
-                value={inputParagraph}
-                onChange={(e) => setInputParagraph(e.target.value)}
-                className={'text-2xl lg:text-5xl outline-none p-5 absolute top-0 left-0 right-0 bottom-0 z-10 opacity-75'}
-                placeholder=''
-                disabled={gameStatus !== 'in-progress' || !ioInstance}
-              />
+                      if (index < inputParagraph.length) {
+                        className = inputParagraph[index] === char ? "text-green-400" : "bg-red-300";
+                      }
+                      if (index === inputParagraph.length) {
+                        className += " bg-blue-500 animate-pulse"; // Cursor effect
+                      }
+                      return (
+                        <span key={index} className={className}>
+              {char}
+            </span>
+                      );
+                    })}
+                  </div>
+                </CardContent>
+                <CardFooter>
+                  <Textarea
+                    className={'bg-[#ffffff] min-w-full text-xl tracking-wide p-2 text-gray-800'}
+                    value={inputParagraph}
+                    onChange={(e) => setInputParagraph(e.target.value)}
+                    onPaste={(e) => e.preventDefault()}
+                    onCopy={(e) => e.preventDefault()}
+                    onCut={(e) => e.preventDefault()}
+                    placeholder={''}
+                    autoFocus={true}
+                    disabled={gameStatus !== 'in-progress' || !ioInstance}
+                  />
+                </CardFooter>
+              </Card>
+
             </div>
           </div>
         )}
@@ -254,14 +292,72 @@ export default function Game({ gameId, name }: GameProps) {
         {gameStatus === 'finished' && (
           <div>
             <h1>
-              Game Finished!
-              {ioInstance?.id === host && ' Restart the game fresh!'}
+              Round Finished!
+              {ioInstance?.id === host && ' Start the next round or edit the settings below'}
+              {ioInstance?.id !== host && ' Waiting for host to start the next round'}
             </h1>
 
             {host === ioInstance?.id && (
-              <Button className={'mt-10 px-20'} onClick={startGame}>
-                Start Game
-              </Button>
+              <div>
+                <Button className={'mt-10 px-20'} onClick={startGame}>
+                  Start Next Round!
+                </Button>
+                <Card className={'my-3'}>
+                  <CardHeader>Match Settings:</CardHeader>
+                  <CardContent>
+                    <p>Invite Code: {gameId}</p>
+                    <Button className={'mt-1'} onClick={copyInvite}>Copy</Button>
+                    <div className={'my-8'}>
+                      <form>
+                        <div className={'grid-cols-4'}>
+                          <h2>Health:</h2>
+                          <ToggleGroup
+                            variant={'outline'}
+                            type={'single'}
+                            defaultValue={3}
+                            onValueChange={(value) => setHealth(value)}
+                          >
+                            <ToggleGroupItem value={-1}>Off</ToggleGroupItem>
+                            <ToggleGroupItem value={1}>1</ToggleGroupItem>
+                            <ToggleGroupItem value={2}>2</ToggleGroupItem>
+                            <ToggleGroupItem value={3}>3</ToggleGroupItem>
+                            <ToggleGroupItem value={4}>4</ToggleGroupItem>
+                            <ToggleGroupItem value={5}>5</ToggleGroupItem>
+                          </ToggleGroup>
+                          <h2>Time:</h2>
+                          <ToggleGroup
+                            type={'single'}
+                            variant={'outline'}
+                            defaultValue={60000}
+                            onValueChange={(value) => setTime(value)}
+                          >
+                            <ToggleGroupItem value={30000}>30s</ToggleGroupItem>
+                            <ToggleGroupItem value={60000}>60s</ToggleGroupItem>
+                            <ToggleGroupItem value={90000}>90s</ToggleGroupItem>
+                            <ToggleGroupItem value={120000}>120s</ToggleGroupItem>
+                          </ToggleGroup>
+                          <div className={'py-2'}>
+                            <h2>Text Length:</h2>
+                            <div className={'py-2'}>
+                              <Label>{textLength} words</Label>
+                              <Slider
+                                className={'my-2'}
+                                defaultValue={[100]}
+                                max={200}
+                                min={50}
+                                step={1}
+                                onValueChange={(value) => setTextLength(value[0])}
+                              />
+                            </div>
+                          </div>
+                        </div>
+                      </form>
+                    </div>
+                  </CardContent>
+
+                </Card>
+              </div>
+
             )}
           </div>
           )}

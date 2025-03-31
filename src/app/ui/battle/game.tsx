@@ -13,6 +13,8 @@ import {Label} from "@/components/ui/label";
 import {ToggleGroup, ToggleGroupItem} from "@/components/ui/toggle-group";
 import {Slider} from "@/components/ui/slider";
 import { cn } from "@/lib/utils"
+import {text} from "stream/consumers";
+import {toast} from "sonner";
 
 
 export default function Game({ gameId, name }: GameProps) {
@@ -26,12 +28,14 @@ export default function Game({ gameId, name }: GameProps) {
   const [time, setTime] = useState<number>(60000);
   const [textLength, setTextLength] = useState<number>(100);
   const [seconds, setSeconds] = useState(time / 1000);
+  const [playerError, setPlayerError] = useState<boolean>(false);
 
   useEffect(() => {
     /* ********************* CHANGE THE HARD CODED URL LATER ********************************* */
     const socket = io('http://localhost:8080', {
       transports: ["websocket"],
     })
+
 
     setIoInstance(socket);
 
@@ -44,6 +48,15 @@ export default function Game({ gameId, name }: GameProps) {
   }, []);
 
   useEffect(() => {
+    if (!ioInstance || gameStatus !== "in-progress") return;
+      const timer =
+        seconds > 0 && setInterval(() => setSeconds(seconds - 1), 1000);
+      return () => clearInterval(timer);
+
+  }, [gameStatus, seconds]);
+
+
+  useEffect(() => {
     setupListeners();
     return () => removeListeners();
   }, [ioInstance]);
@@ -52,6 +65,7 @@ export default function Game({ gameId, name }: GameProps) {
     if (!ioInstance || gameStatus !== 'in-progress') return;
 
     ioInstance.emit('player-typed', inputParagraph);
+
   }, [inputParagraph]);
 
   function setupListeners() {
@@ -100,22 +114,24 @@ export default function Game({ gameId, name }: GameProps) {
       setInputParagraph('');
     });
 
+    ioInstance.on('player-finished', () => {
+      ioInstance.emit('end-game');
+      console.log('game ended because player finished');
+    })
+
     ioInstance.on('new-host', (id: string) => {
       setHost(id);
     });
 
     ioInstance.on('error', (message: string) => {
-      console.log(message);
+      toast(message);
     })
+
+    ioInstance.on('player-error', () => {
+      setPlayerError(true);
+    })
+
   }
-
-
-  useEffect (() => {
-    if (gameStatus !== 'in-progress') setSeconds(time / 1000);
-    const timer =
-      seconds > 0 && setInterval(() => setSeconds(seconds - 1), 1000);
-    return () => clearInterval(timer);
-  }, [seconds]);
 
 
 
@@ -153,6 +169,20 @@ export default function Game({ gameId, name }: GameProps) {
     }
 
   }
+
+  const handleKeyDown = (e) => {
+    const { key } = e;
+
+    if (key === 'Backspace') return;
+
+    const currentLength = inputParagraph.length;
+
+    if ( currentLength > 0 && inputParagraph !== paragraph.slice(0, currentLength)) {
+      e.preventDefault();
+      return;
+    }
+
+  };
 
   return (
     <div>
@@ -212,7 +242,7 @@ export default function Game({ gameId, name }: GameProps) {
                         <ToggleGroup
                           type={'single'}
                           variant={'outline'}
-                          defaultValue={60000}
+                          defaultValue={time}
                           onValueChange={(value) => setTime(value)}
                         >
                           <ToggleGroupItem value={30000}>30s</ToggleGroupItem>
@@ -226,7 +256,7 @@ export default function Game({ gameId, name }: GameProps) {
                             <Label>{textLength} words</Label>
                             <Slider
                               className={'my-2'}
-                              defaultValue={[100]}
+                              defaultValue={[textLength]}
                               max={200}
                               min={50}
                               step={1}
@@ -244,13 +274,15 @@ export default function Game({ gameId, name }: GameProps) {
             )}
           </div>
         )}
-
+        {/* Actual Game UI only shown when gameStatus is in progress */}
         {gameStatus === 'in-progress' && (
           <div className={'h-full'}>
             <h1 className={'text-2xl font-bold mb-10'}>Type the paragraph below</h1>
-            <Label>{seconds}</Label>
             <div className={'relative h-full'}>
               <Card>
+                <CardHeader>
+                  <Label>{seconds}</Label>
+                </CardHeader>
                 <CardContent>
                   <div className={'text-2xl tracking-widest'}>
                     {paragraph.split("").map((char, index) => {
@@ -271,13 +303,14 @@ export default function Game({ gameId, name }: GameProps) {
                   </div>
                 </CardContent>
                 <CardFooter>
-                  <Textarea
-                    className={'bg-[#ffffff] min-w-full text-xl tracking-wide p-2 text-gray-800'}
+                  <textarea
+                    className={'bg-[#ffffff] min-w-full text-2xl tracking-wide p-2 text-gray-800'}
                     value={inputParagraph}
                     onChange={(e) => setInputParagraph(e.target.value)}
                     onPaste={(e) => e.preventDefault()}
                     onCopy={(e) => e.preventDefault()}
                     onCut={(e) => e.preventDefault()}
+                    onKeyDown={handleKeyDown}
                     placeholder={''}
                     autoFocus={true}
                     disabled={gameStatus !== 'in-progress' || !ioInstance}
@@ -328,7 +361,7 @@ export default function Game({ gameId, name }: GameProps) {
                           <ToggleGroup
                             type={'single'}
                             variant={'outline'}
-                            defaultValue={60000}
+                            defaultValue={time}
                             onValueChange={(value) => setTime(value)}
                           >
                             <ToggleGroupItem value={30000}>30s</ToggleGroupItem>
@@ -342,7 +375,7 @@ export default function Game({ gameId, name }: GameProps) {
                               <Label>{textLength} words</Label>
                               <Slider
                                 className={'my-2'}
-                                defaultValue={[100]}
+                                defaultValue={[textLength]}
                                 max={200}
                                 min={50}
                                 step={1}

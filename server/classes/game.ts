@@ -11,6 +11,7 @@ export class Game {
   paragraph: string;
   time: number;
   textLength: number;
+  timer: NodeJS.Timeout | null;
 
   constructor(id: string, io: Server, host: string) {
     this.gameId = id;
@@ -21,6 +22,7 @@ export class Game {
     this.paragraph = '';
     this.time = 60000;
     this.textLength = 0;
+    this.timer = null;
   }
 
   setupListeners(socket: Socket) {
@@ -46,11 +48,12 @@ export class Game {
 
       this.io.to(this.gameId).emit('game-started', paragraph, this.time);
 
-      setTimeout(() => {
-        this.gameStatus = 'finished';
-        this.io.to(this.gameId).emit('game-finished');
-        this.io.to(this.gameId).emit('players', this.players);
-        // ********* NEED TO ADD ABILITY TO CHANGE TIMER *********
+      this.timer = setTimeout(() => {
+        if (this.gameStatus === 'in-progress') {
+          this.gameStatus = 'finished';
+          this.io.to(this.gameId).emit('game-finished');
+          this.io.to(this.gameId).emit('players', this.players);
+        }
       }, this.time);
     });
 
@@ -58,7 +61,9 @@ export class Game {
       if (this.gameStatus !== 'in-progress') return socket.emit('error', 'The game has not yet started');
 
       const splitParagraphWords = this.paragraph.split(' ');
+      const splitParagraphChars = this.paragraph.split('');
       const splitTypedWords = typed.split(' ');
+      const splitTypedChars = typed.split('');
 
       let score = 0;
       for (let i = 0; i < splitTypedWords.length; i++) {
@@ -69,12 +74,22 @@ export class Game {
           break;
         }
       }
+
+
       const player = this.players.find(player => player.id === socket.id);
 
-      if (player) player.score = score;
+      if (player) {
+        player.score = score;
+      }
 
       this.io.to(this.gameId).emit('player-score', {id: socket.id, score});
+
+      if (typed === this.paragraph) {
+        socket.emit('player-finished');
+      }
     });
+
+
 
     socket.on('leave', () => {
       if (this.gameHost === socket.id) {
@@ -108,6 +123,13 @@ export class Game {
       socket.leave(this.gameId);
       this.players = this.players.filter((player) => player.id !== socket.id);
       this.io.to(this.gameId).emit('player-left', socket.id);
+    });
+
+    socket.on('end-game', () => {
+      this.gameStatus = 'finished';
+      this.io.to(this.gameId).emit('game-finished');
+      this.io.to(this.gameId).emit('players', this.players);
+      if (this.timer) clearTimeout(this.timer);
     });
   }
 

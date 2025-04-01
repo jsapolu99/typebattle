@@ -18,7 +18,7 @@ export async function generateParagraph(textLength: number) {
     }
 
     const data = await response.text();
-    const paragraph = data.split('\n').join(' ');
+    const paragraph = data.split('\n').join(' ').replace(/\s+/g, ' ');
 
     return paragraph.split(' ').slice(0, textLength + 1).join(' ');
   } catch (e) {

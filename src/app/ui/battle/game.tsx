@@ -102,6 +102,20 @@ export default function Game({ gameId, name }: GameProps) {
       );
     });
 
+    ioInstance.on('player-health', ({id, health}: PlayerScore) => {
+      setPlayers((prev) =>
+        prev.map((player) => {
+          if (player.id === id) {
+            return {
+              ...player,
+              health,
+            };
+          }
+          return player;
+        }),
+      );
+    });
+
     ioInstance.on('game-started', (paragraph: string, time: number) => {
       setParagraph(paragraph);
       setTime(time);
@@ -224,20 +238,6 @@ export default function Game({ gameId, name }: GameProps) {
                     <div className={'my-8'}>
                     <form>
                       <div className={'grid-cols-4'}>
-                        <h2>Health:</h2>
-                          <ToggleGroup
-                            variant={'outline'}
-                            type={'single'}
-                            defaultValue={3}
-                            onValueChange={(value) => setHealth(value)}
-                          >
-                            <ToggleGroupItem value={-1}>Off</ToggleGroupItem>
-                            <ToggleGroupItem value={1}>1</ToggleGroupItem>
-                            <ToggleGroupItem value={2}>2</ToggleGroupItem>
-                            <ToggleGroupItem value={3}>3</ToggleGroupItem>
-                            <ToggleGroupItem value={4}>4</ToggleGroupItem>
-                            <ToggleGroupItem value={5}>5</ToggleGroupItem>
-                          </ToggleGroup>
                         <h2>Time:</h2>
                         <ToggleGroup
                           type={'single'}
@@ -343,20 +343,6 @@ export default function Game({ gameId, name }: GameProps) {
                     <div className={'my-8'}>
                       <form>
                         <div className={'grid-cols-4'}>
-                          <h2>Health:</h2>
-                          <ToggleGroup
-                            variant={'outline'}
-                            type={'single'}
-                            defaultValue={3}
-                            onValueChange={(value) => setHealth(value)}
-                          >
-                            <ToggleGroupItem value={-1}>Off</ToggleGroupItem>
-                            <ToggleGroupItem value={1}>1</ToggleGroupItem>
-                            <ToggleGroupItem value={2}>2</ToggleGroupItem>
-                            <ToggleGroupItem value={3}>3</ToggleGroupItem>
-                            <ToggleGroupItem value={4}>4</ToggleGroupItem>
-                            <ToggleGroupItem value={5}>5</ToggleGroupItem>
-                          </ToggleGroup>
                           <h2>Time:</h2>
                           <ToggleGroup
                             type={'single'}

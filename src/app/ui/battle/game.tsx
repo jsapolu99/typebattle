@@ -15,6 +15,7 @@ import {Slider} from "@/components/ui/slider";
 import { cn } from "@/lib/utils"
 import {text} from "stream/consumers";
 import {toast} from "sonner";
+import Confetti from 'react-confetti';
 
 
 export default function Game({ gameId, name }: GameProps) {
@@ -29,6 +30,7 @@ export default function Game({ gameId, name }: GameProps) {
   const [textLength, setTextLength] = useState<number>(100);
   const [seconds, setSeconds] = useState(time / 1000);
   const [playerError, setPlayerError] = useState<boolean>(false);
+  const [windowSize, setWindowSize] = useState({width: undefined, height: undefined});
 
   useEffect(() => {
     /* ********************* CHANGE THE HARD CODED URL LATER ********************************* */
@@ -195,8 +197,14 @@ export default function Game({ gameId, name }: GameProps) {
       e.preventDefault();
       return;
     }
-
   };
+
+  function handleResize() {
+    setWindowSize({
+      width: window.innerWidth,
+      height: window.innerHeight
+    });
+  }
 
   return (
     <div>
@@ -324,6 +332,10 @@ export default function Game({ gameId, name }: GameProps) {
 
         {gameStatus === 'finished' && (
           <div>
+            <Confetti
+              width={windowSize.width}
+              height={windowSize.height}
+            />
             <h1>
               Round Finished!
               {ioInstance?.id === host && ' Start the next round or edit the settings below'}

@@ -38,7 +38,7 @@ export default function Home() {
         <Card className={'w-[350px] m-3'}>
           <CardHeader>
             <CardTitle>Welcome to Type Battle</CardTitle>
-            <CardDescription>Test your typing speed against your friends. Use upgrades and items to make their life miserable and yours a walk in the park!</CardDescription>
+            <CardDescription>Race against your friends and prove who’s the ultimate typing champion! Customize the game to match your style, challenge rivals in real-time, and climb the leaderboard. Only one can claim the top spot—will it be you?</CardDescription>
           </CardHeader>
         </Card>
       </div>

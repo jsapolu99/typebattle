@@ -31,6 +31,7 @@ export default function Game({ gameId, name }: GameProps) {
   const [seconds, setSeconds] = useState(time / 1000);
   const [playerError, setPlayerError] = useState<boolean>(false);
   const [windowSize, setWindowSize] = useState({width: undefined, height: undefined});
+  const [count, setCount] = useState(3);
 
   useEffect(() => {
     /* ********************* CHANGE THE HARD CODED URL LATER ********************************* */
@@ -48,6 +49,18 @@ export default function Game({ gameId, name }: GameProps) {
       socket.disconnect();
     }
   }, []);
+
+  useEffect(() => {
+    if (gameStatus === 'in-progress') {
+      const countdown = setInterval(() => {
+        setCount(prevCount => prevCount - 1);
+      }, 1000);
+      if (count < 0) {
+        clearInterval(timer);
+      }
+      return () => clearInterval(countdown)
+    }
+  },[count]);
 
   useEffect(() => {
     if (!ioInstance || gameStatus !== "in-progress") return;

@@ -39,22 +39,31 @@ export class Game {
 
       this.io.to(this.gameId).emit('players', this.players);
 
-      this.gameStatus = 'in-progress';
-
+      this.io.to(this.gameId).emit('start-countdown');
       const paragraph = await generateParagraph(textLength);
 
       // ******* NEED TO ADD ABILITY TO CHANGE TEXT LENGTH ********
       this.paragraph = paragraph;
 
-      this.io.to(this.gameId).emit('game-started', paragraph, this.time);
+      setTimeout(() => {
+        this.gameStatus = 'in-progress';
+        this.io.to(this.gameId).emit('game-started', paragraph, this.time);
+        this.timer = setTimeout(() => {
+          if (this.gameStatus === 'in-progress') {
+            this.gameStatus = 'finished';
+            this.io.to(this.gameId).emit('game-finished');
+            this.io.to(this.gameId).emit('players', this.players);
+          }
+        }, this.time);
+      }, 3000);
 
-      this.timer = setTimeout(() => {
-        if (this.gameStatus === 'in-progress') {
-          this.gameStatus = 'finished';
-          this.io.to(this.gameId).emit('game-finished');
-          this.io.to(this.gameId).emit('players', this.players);
-        }
-      }, this.time);
+
+
+
+
+
+
+
     });
 
     socket.on('player-typed', (typed: string) => {

@@ -32,6 +32,7 @@ export default function Game({ gameId, name }: GameProps) {
   const [playerError, setPlayerError] = useState<boolean>(false);
   const [windowSize, setWindowSize] = useState({width: undefined, height: undefined});
   const [count, setCount] = useState(3);
+  const [showUi, setShowUi] = useState(false);
 
   useEffect(() => {
     /* ********************* CHANGE THE HARD CODED URL LATER ********************************* */
@@ -50,17 +51,6 @@ export default function Game({ gameId, name }: GameProps) {
     }
   }, []);
 
-  useEffect(() => {
-    if (gameStatus === 'in-progress') {
-      const countdown = setInterval(() => {
-        setCount(prevCount => prevCount - 1);
-      }, 1000);
-      if (count < 0) {
-        clearInterval(timer);
-      }
-      return () => clearInterval(countdown)
-    }
-  },[count]);
 
   useEffect(() => {
     if (!ioInstance || gameStatus !== "in-progress") return;
@@ -160,6 +150,22 @@ export default function Game({ gameId, name }: GameProps) {
       setPlayerError(true);
     })
 
+    ioInstance.on('start-countdown', () => {
+      setShowUi(true);
+      let countdownValue = 3;
+      setCount(countdownValue);
+      const countdown = setInterval(() => {
+        setCount((prev) => {
+          if (prev === 1) {
+            clearInterval(countdown); // Stop countdown when reaching 0
+
+            setShowUi(false);
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+    })
   }
 
 
@@ -180,8 +186,7 @@ export default function Game({ gameId, name }: GameProps) {
 
   function startGame() {
     if (!ioInstance) return;
-
-    ioInstance.emit('start-game', time, textLength);
+    ioInstance.emit('start-game', time, textLength); // Emit event after 3s
   }
 
   window.onbeforeunload = () => {
@@ -245,7 +250,7 @@ export default function Game({ gameId, name }: GameProps) {
         {gameStatus === 'not-started' && (
           <div className={'flex flex-col items-center justify-center p-10'}>
             <h1 className={'text-2xl font-bold'}>Waiting for players to join...</h1>
-
+            {showUi && <h1 className={'text-2xl font-bold'}>{count}</h1>}
             {host === ioInstance?.id && (
               <div>
                 <Button className={'mt-10 px-20'} onClick={startGame}>
@@ -354,7 +359,7 @@ export default function Game({ gameId, name }: GameProps) {
               {ioInstance?.id === host && ' Start the next round or edit the settings below'}
               {ioInstance?.id !== host && ' Waiting for host to start the next round'}
             </h1>
-
+            {showUi && <h1 className={'text-2xl font-bold'}>{count}</h1>}
             {host === ioInstance?.id && (
               <div>
                 <Button className={'mt-10 px-20'} onClick={startGame}>

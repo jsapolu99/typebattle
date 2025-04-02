@@ -24,7 +24,7 @@ export default function Game({ gameId, name }: GameProps) {
   const [time, setTime] = useState<number>(60000);
   const [textLength, setTextLength] = useState<number>(100);
   const [seconds, setSeconds] = useState(time / 1000);
-  const [windowSize, setWindowSize] = useState({width: undefined, height: undefined});
+  const [windowSize] = useState({width: undefined, height: undefined});
   const [count, setCount] = useState(3);
   const [showUi, setShowUi] = useState(false);
 

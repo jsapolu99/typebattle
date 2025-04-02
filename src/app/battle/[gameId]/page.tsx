@@ -5,20 +5,24 @@ import { Button } from "@/components/ui/button";
 import Navbar from "@/app/ui/navbar";
 import { redirect } from 'next/navigation';
 
+interface PageProps {
+  params: Promise<{ gameId: string }>;
+  searchParams: Promise<{ name?: string }>;
+}
 
-export default function GameJoin({searchParams, params}: {
-  searchParams: {name?: string},
-  params: {gameId: string},
-}) {
+export default async function GameJoin({searchParams, params}: PageProps){
+
+  const resolvedParams = await params;
+  const resolvedSearchParams = await searchParams;
   async function appendName(formData: FormData) {
     'use server';
     const name = formData.get('name') as string;
 
     if(!name) return;
 
-    redirect(`/battle/${params.gameId}?name=${name}`);
+    redirect(`/battle/${resolvedParams.gameId}?name=${name}`);
   }
-  if (!searchParams.name) {
+  if (!resolvedSearchParams.name) {
     return (
         <div className={'w-screen bg-[#eeeeee] min-h-screen'}>
           <Navbar/>
@@ -44,5 +48,5 @@ export default function GameJoin({searchParams, params}: {
         </div>
     );
   }
-  return <Game gameId={params.gameId} name={searchParams.name}/>
+  return <Game gameId={resolvedParams.gameId} name={resolvedSearchParams.name}/>
 }

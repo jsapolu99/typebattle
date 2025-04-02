@@ -17,7 +17,7 @@ export default function Home() {
     router.push(`/battle/${inviteCode}`);
   }
 
-  function joinGame(e: FormEvent<FormEvent>) {
+  function joinGame(e: FormEvent<HTMLFormEvent>) {
     e.preventDefault()
     const form = e.currentTarget;
     const formData = new FormData(form);

@@ -65,13 +65,12 @@ export default function Home() {
           <CardContent>
             <form onSubmit={joinGame}>
               <Input
-                className={'rounded my-3 text-2xl font-bold p-3 text-gray-900 hover:bg-green-400'}
+                className={'rounded my-3 font-bold p-3 text-gray-900 hover:bg-gray-100'}
                 type={'text'}
                 name={'inviteCode'}
                 placeholder={'Enter invite code'}
               />
               <Button
-                variant={'outline'}
                 href={'/match-making/join'}
               >
                 Join Match</Button>

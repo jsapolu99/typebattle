@@ -1,4 +1,3 @@
-import BattleUI from "@/app/ui/battle/battle-ui";
 import Game from "@/app/ui/battle/game";
 import {Card, CardContent, CardDescription, CardHeader, CardTitle} from "@/components/ui/card";
 import {Input} from "@/components/ui/input";

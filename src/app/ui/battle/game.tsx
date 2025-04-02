@@ -8,11 +8,9 @@ import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import Navbar from "@/app/ui/navbar";
 import {Card, CardHeader, CardContent, CardFooter} from "@/components/ui/card";
-import {RadioGroup, RadioGroupItem} from "@/components/ui/radio-group";
 import {Label} from "@/components/ui/label";
 import {ToggleGroup, ToggleGroupItem} from "@/components/ui/toggle-group";
 import {Slider} from "@/components/ui/slider";
-import { cn } from "@/lib/utils"
 import {text} from "stream/consumers";
 import {toast} from "sonner";
 import Confetti from 'react-confetti';
@@ -33,6 +31,7 @@ export default function Game({ gameId, name }: GameProps) {
   const [windowSize, setWindowSize] = useState({width: undefined, height: undefined});
   const [count, setCount] = useState(3);
   const [showUi, setShowUi] = useState(false);
+  const [confettiActive, setConfettiActive] = useState(false);
 
   useEffect(() => {
     /* ********************* CHANGE THE HARD CODED URL LATER ********************************* */
@@ -59,6 +58,9 @@ export default function Game({ gameId, name }: GameProps) {
       return () => clearInterval(timer);
 
   }, [gameStatus, seconds]);
+
+
+
 
 
   useEffect(() => {
@@ -100,20 +102,6 @@ export default function Game({ gameId, name }: GameProps) {
             return {
               ...player,
               score,
-            };
-          }
-          return player;
-        }),
-      );
-    });
-
-    ioInstance.on('player-health', ({id, health}: PlayerScore) => {
-      setPlayers((prev) =>
-        prev.map((player) => {
-          if (player.id === id) {
-            return {
-              ...player,
-              health,
             };
           }
           return player;
@@ -182,6 +170,10 @@ export default function Game({ gameId, name }: GameProps) {
     ioInstance.off('game-finished');
     ioInstance.off('new-host');
     ioInstance.off('error');
+    ioInstance.off('player-error');
+    ioInstance.off('start-countdown');
+    ioInstance.off('player-finished');
+    ioInstance.off('end-game');
   }
 
   function startGame() {
@@ -249,11 +241,15 @@ export default function Game({ gameId, name }: GameProps) {
       <div className={'lg:col-span-2 h-full'}>
         {gameStatus === 'not-started' && (
           <div className={'flex flex-col items-center justify-center p-10'}>
-            <h1 className={'text-2xl font-bold'}>Waiting for players to join...</h1>
-            {showUi && <h1 className={'text-2xl font-bold'}>{count}</h1>}
+            {!showUi && <h1 className={'text-2xl font-bold'}>Waiting for players to join...</h1>}
+            {showUi && (
+              <div className={'flex justify-center'}>
+                <h1 className={'text-2xl font-bold'}>{'Game Starting in: ' + count }</h1>
+              </div>
+            )}
             {host === ioInstance?.id && (
               <div>
-                <Button className={'mt-10 px-20'} onClick={startGame}>
+                <Button className={'mt-10 px-20'}onClick={startGame}>
                   Start Game
                 </Button>
                 <Card className={'my-3'}>
@@ -353,13 +349,20 @@ export default function Game({ gameId, name }: GameProps) {
             <Confetti
               width={windowSize.width}
               height={windowSize.height}
+              numberOfPieces={100}
             />
+
             <h1>
-              Round Finished!
-              {ioInstance?.id === host && ' Start the next round or edit the settings below'}
-              {ioInstance?.id !== host && ' Waiting for host to start the next round'}
+              {!showUi && 'Round Finished!'}
+
+              {ioInstance?.id === host && !showUi && ' Start the next round or edit the settings below'}
+              {ioInstance?.id !== host && !showUi && ' Waiting for host to start the next round'}
             </h1>
-            {showUi && <h1 className={'text-2xl font-bold'}>{count}</h1>}
+            {showUi && (
+              <div className={'flex justify-center'}>
+                <h1 className={'text-2xl font-bold'}>{'Game Starting in: ' + count }</h1>
+              </div>
+            )}
             {host === ioInstance?.id && (
               <div>
                 <Button className={'mt-10 px-20'} onClick={startGame}>

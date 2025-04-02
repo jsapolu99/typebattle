@@ -1,12 +1,12 @@
 'use client';
 import Navbar from "@/app/ui/navbar";
-import Link from "next/link";
 import { v4 as uuidv4 } from 'uuid';
 import { useRouter } from 'next/navigation';
 import {FormEvent} from "react";
 import {Card, CardDescription, CardHeader, CardTitle, CardContent} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import {toast} from "sonner";
 
 
 export default function Home() {
@@ -24,9 +24,10 @@ export default function Home() {
 
     const inviteCode = formData.get('inviteCode') as string;
 
-    if (!inviteCode) {
+    if (!inviteCode || inviteCode.length !== 36) {
+      toast('Please enter a valid invite code');
       return;
-      // Possibly use ShadCN UI to show an error message
+
     }
     router.push(`/battle/${inviteCode}`);
   }

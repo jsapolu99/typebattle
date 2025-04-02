@@ -3,6 +3,7 @@ import {Card, CardContent, CardDescription, CardHeader, CardTitle} from "@/compo
 import {Input} from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import Navbar from "@/app/ui/navbar";
+import { redirect } from 'next/navigation';
 
 
 export default function GameJoin({searchParams, params}: {
@@ -28,14 +29,14 @@ export default function GameJoin({searchParams, params}: {
           </CardHeader>
           <CardContent>
             <CardDescription className={'text-2xl'}>Enter a nickname to continue</CardDescription>
-            <form>
+            <form action={appendName}>
               <Input
                 className={'rounded my-3 text-2xl font-bold p-3 text-gray-900 hover:bg-gray-100'}
                 type={'text'}
                 name={'name'}
                 placeholder={'Enter your name'}
               />
-              <Button>Join Game</Button>
+              <Button type={'submit'}>Join Game</Button>
             </form>
           </CardContent>
         </Card>

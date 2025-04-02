@@ -4,14 +4,12 @@ import type { GameProps, Player, GameStatus, PlayerScore } from "../../../../ser
 import { useState } from "react";
 import {Socket, io} from "socket.io-client";
 import LeaderboardCard from "@/components/ui/leaderboard-card";
-import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import Navbar from "@/app/ui/navbar";
 import {Card, CardHeader, CardContent, CardFooter} from "@/components/ui/card";
 import {Label} from "@/components/ui/label";
 import {ToggleGroup, ToggleGroupItem} from "@/components/ui/toggle-group";
 import {Slider} from "@/components/ui/slider";
-import {text} from "stream/consumers";
 import {toast} from "sonner";
 import Confetti from 'react-confetti';
 
@@ -23,15 +21,12 @@ export default function Game({ gameId, name }: GameProps) {
   const [paragraph, setParagraph] = useState<string>('');
   const [host, setHost] = useState<string>('');
   const [inputParagraph, setInputParagraph] = useState<string>('');
-  const [health, setHealth] = useState<number>(5);
   const [time, setTime] = useState<number>(60000);
   const [textLength, setTextLength] = useState<number>(100);
   const [seconds, setSeconds] = useState(time / 1000);
-  const [playerError, setPlayerError] = useState<boolean>(false);
   const [windowSize, setWindowSize] = useState({width: undefined, height: undefined});
   const [count, setCount] = useState(3);
   const [showUi, setShowUi] = useState(false);
-  const [confettiActive, setConfettiActive] = useState(false);
 
   useEffect(() => {
     /* ********************* CHANGE THE HARD CODED URL LATER ********************************* */
@@ -134,13 +129,9 @@ export default function Game({ gameId, name }: GameProps) {
       toast(message);
     })
 
-    ioInstance.on('player-error', () => {
-      setPlayerError(true);
-    })
-
     ioInstance.on('start-countdown', () => {
       setShowUi(true);
-      let countdownValue = 3;
+      const countdownValue = 3;
       setCount(countdownValue);
       const countdown = setInterval(() => {
         setCount((prev) => {
@@ -208,13 +199,6 @@ export default function Game({ gameId, name }: GameProps) {
       return;
     }
   };
-
-  function handleResize() {
-    setWindowSize({
-      width: window.innerWidth,
-      height: window.innerHeight
-    });
-  }
 
   return (
     <div>

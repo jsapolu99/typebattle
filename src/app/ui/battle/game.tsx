@@ -35,7 +35,7 @@ export default function Game({ gameId, name }: GameProps) {
 
   useEffect(() => {
     /* ********************* CHANGE THE HARD CODED URL LATER ********************************* */
-    const socket = io('http://localhost:8080', {
+    const socket = io(process.env.NEXT_PUBLIC_WEBSOCKET_URL, {
       transports: ["websocket"],
     })
 

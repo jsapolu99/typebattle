@@ -48,11 +48,11 @@ export default function Game({ gameId, name }: GameProps) {
 
   useEffect(() => {
     if (!ioInstance || gameStatus !== "in-progress") return;
-    if (seconds <= 0) return;
-       setTimeout(() => {
-        setSeconds((prev) => prev - 1);
-      },1000);
-  })
+      const timer =
+        setInterval(() => setSeconds(seconds - 1), 1000);
+      return () => clearInterval(timer);
+
+  }, [gameStatus, seconds]);
 
 
 
@@ -187,7 +187,7 @@ export default function Game({ gameId, name }: GameProps) {
 
   }
 
-  const handleKeyDown = (e: KeyboardEvent) => {
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     const { key } = e;
 
     if (key === 'Backspace') return;
@@ -248,13 +248,13 @@ export default function Game({ gameId, name }: GameProps) {
                         <ToggleGroup
                           type={'single'}
                           variant={'outline'}
-                          defaultValue={time}
-                          onValueChange={(value) => setTime(value)}
+                          defaultValue={time.toString()}
+                          onValueChange={(value) => setTime(Number(value))}
                         >
-                          <ToggleGroupItem value={30000}>30s</ToggleGroupItem>
-                          <ToggleGroupItem value={60000}>60s</ToggleGroupItem>
-                          <ToggleGroupItem value={90000}>90s</ToggleGroupItem>
-                          <ToggleGroupItem value={120000}>120s</ToggleGroupItem>
+                          <ToggleGroupItem value={'30000'}>30s</ToggleGroupItem>
+                          <ToggleGroupItem value={'60000'}>60s</ToggleGroupItem>
+                          <ToggleGroupItem value={'90000'}>90s</ToggleGroupItem>
+                          <ToggleGroupItem value={'120000'}>120s</ToggleGroupItem>
                         </ToggleGroup>
                         <div className={'py-2'}>
                           <h2>Text Length:</h2>
@@ -364,13 +364,13 @@ export default function Game({ gameId, name }: GameProps) {
                           <ToggleGroup
                             type={'single'}
                             variant={'outline'}
-                            defaultValue={time}
-                            onValueChange={(value) => setTime(value)}
+                            defaultValue={time.toString()}
+                            onValueChange={(value) => setTime(Number(value))}
                           >
-                            <ToggleGroupItem value={30000}>30s</ToggleGroupItem>
-                            <ToggleGroupItem value={60000}>60s</ToggleGroupItem>
-                            <ToggleGroupItem value={90000}>90s</ToggleGroupItem>
-                            <ToggleGroupItem value={120000}>120s</ToggleGroupItem>
+                            <ToggleGroupItem value={'30000'}>30s</ToggleGroupItem>
+                            <ToggleGroupItem value={'60000'}>60s</ToggleGroupItem>
+                            <ToggleGroupItem value={'90000'}>90s</ToggleGroupItem>
+                            <ToggleGroupItem value={'120000'}>120s</ToggleGroupItem>
                           </ToggleGroup>
                           <div className={'py-2'}>
                             <h2>Text Length:</h2>

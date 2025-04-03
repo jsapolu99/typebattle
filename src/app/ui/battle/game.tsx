@@ -48,18 +48,12 @@ export default function Game({ gameId, name }: GameProps) {
 
   useEffect(() => {
     if (!ioInstance || gameStatus !== "in-progress") return;
-    let timer: number | Timeout | undefined;
+    if (seconds <= 0) return;
+      const timer = setTimeout(() => {
+        setSeconds((prev) => prev - 1);
+      },1000);
+  })
 
-    if (seconds > 0) {
-      timer = setInterval(() => setSeconds((prev) => prev - 1), 1000);
-    }
-
-    return () => {
-      if (timer !== undefined) {
-        clearInterval(timer);
-      }
-    };
-  }, [gameStatus, seconds]);
 
 
 

@@ -187,7 +187,7 @@ export default function Game({ gameId, name }: GameProps) {
 
   }
 
-  const handleKeyDown = (e) => {
+  const handleKeyDown = (e: KeyboardEvent) => {
     const { key } = e;
 
     if (key === 'Backspace') return;

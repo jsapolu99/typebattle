@@ -49,7 +49,7 @@ export default function Game({ gameId, name }: GameProps) {
   useEffect(() => {
     if (!ioInstance || gameStatus !== "in-progress") return;
     if (seconds <= 0) return;
-      const timer = setTimeout(() => {
+       setTimeout(() => {
         setSeconds((prev) => prev - 1);
       },1000);
   })

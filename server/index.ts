@@ -2,7 +2,7 @@ import { createServer } from 'http';
 import { Server } from 'socket.io';
 import { setupListeners } from "./setupListeners";
 
-const PORT = process.env.PORT || 8080;
+const PORT = parseInt(process.env.PORT || '8080', 10);
 
 // Create an HTTP server that responds to requests
 const httpServer = createServer((req, res) => {
@@ -20,6 +20,6 @@ const io = new Server(httpServer, {
 setupListeners(io);
 
 // Correct the listen function (remove Number('0.0.0.0'))
-httpServer.listen(PORT, () => {
+httpServer.listen(PORT, '0.0.0.0',() => {
   console.log(`Server is running on port ${PORT}`);
 });

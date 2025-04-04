@@ -15,12 +15,6 @@ const io = new Server(httpServer, {
 
 setupListeners(io);
 
-httpServer.listen(
-  {
-    port: PORT,
-    host: '0.0.0.0',
-  },
-  () => {
-    console.log(`Server is running on port ${PORT}`);
-  }
-);
+httpServer.listen(PORT, Number('0.0.0.0'), () => {
+  console.log(`Server is running on port ${PORT}`);
+});

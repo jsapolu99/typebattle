@@ -1,8 +1,8 @@
 import Link from 'next/link';
 export default function Navbar() {
   return (
-    <nav className="bg-[#015893] p-4">
-      <div className="container mx-auto flex justify-between items-center">
+    <nav className="bg-[#015893] p-4 w-full">
+      <div className="flex justify-between items-center px-4 sm:px-8">
         <Link href="/" className="text-white text-lg font-bold">
           TypeBattle
         </Link>

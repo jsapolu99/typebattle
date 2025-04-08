@@ -27,6 +27,7 @@ export default function Game({ gameId, name }: GameProps) {
   const [windowSize] = useState({width: undefined, height: undefined});
   const [count, setCount] = useState(3);
   const [showUi, setShowUi] = useState(false);
+  const [connectingScreen, setConnectingScreen] = useState(true);
 
   useEffect(() => {
     /* ********************* CHANGE THE HARD CODED URL LATER ********************************* */
@@ -75,6 +76,7 @@ export default function Game({ gameId, name }: GameProps) {
 
     ioInstance.on('connect', () => {
       console.log('Connected to server');
+      setConnectingScreen(false);
     })
 
     ioInstance.on('players', (players: Player[]) => {
@@ -225,10 +227,15 @@ export default function Game({ gameId, name }: GameProps) {
       <div className={'lg:col-span-2 h-full'}>
         {gameStatus === 'not-started' && (
           <div className={'flex flex-col items-center justify-center p-10'}>
-            {!showUi && <h1 className={'text-2xl font-bold'}>Waiting for players to join...</h1>}
+            {!showUi && !connectingScreen && <h1 className={'text-2xl font-bold'}>Waiting for players to join...</h1>}
             {showUi && (
               <div className={'flex justify-center'}>
                 <h1 className={'text-2xl font-bold'}>{'Game Starting in: ' + count }</h1>
+              </div>
+            )}
+            {connectingScreen && (
+              <div className={'flex justify-center'}>
+                <h1 className={'text-2xl font-bold'}>Connecting to server, this can take a while if server has been inactive...</h1>
               </div>
             )}
             {host === ioInstance?.id && (
